@@ -3,7 +3,7 @@ package example
 import japgolly.scalajs.react.CtorType.Nullary
 import japgolly.scalajs.react.component.Scala.Component
 import japgolly.scalajs.react.vdom.TagOf
-import japgolly.scalajs.react.{BackendScope, Callback, CallbackTo, ReactEventTypes, ScalaComponent}
+import japgolly.scalajs.react.{BackendScope, Callback, ReactEventTypes, ScalaComponent}
 import japgolly.scalajs.react.vdom.html_<^.^._
 import japgolly.scalajs.react.vdom.html_<^._
 import org.scalajs.dom
@@ -44,12 +44,12 @@ class TrackListingOps($: BackendScope[Unit, TrackListingState]) extends ReactEve
     SpotifyApi.fetchTracks(albumId).map { tracks => selectedAlbumState.setState(albumId) >> tracksState.setState(tracks) }
   }
 
-  private def searchForArtist(name: String)(event: ReactEvent) = Callback.future {
+  private def searchForArtist(name: String, selectedAlbum: String)(event: ReactEvent) = Callback.future {
     event.preventDefault()
     for {
       artistOpt <- SpotifyApi.fetchArtist(name)
       albums <- artistOpt.map (artist => SpotifyApi.fetchAlbums(artist.id)) getOrElse Future.successful(Nil)
-      tracks <- albums.find { _.id == $.state.runNow().selectedAlbum }.orElse(albums.headOption).map (album => SpotifyApi.fetchTracks(album.id)) getOrElse Future.successful(Nil)
+      tracks <- albums.find { _.id == selectedAlbum }.orElse(albums.headOption).map (album => SpotifyApi.fetchTracks(album.id)) getOrElse Future.successful(Nil)
     } yield {
       artistOpt match {
         case None => Callback.alert("No artist found")
@@ -65,10 +65,10 @@ class TrackListingOps($: BackendScope[Unit, TrackListingState]) extends ReactEve
   def render(s: TrackListingState): TagOf[Div] = {
     <.div(cls := "container",
       <.h1("Spotify Track Listing"),
-      <.form(cls := "form-group", onSubmit ==> searchForArtist(s.artistInput),
-        <.label(`for` := "artist", "Artist"),
-        <.div(cls := "row", id := "artist",
-          <.div(cls := "col-xs-10",
+      <.form(cls := "form-group", onSubmit ==> searchForArtist(s.artistInput, s.selectedAlbum))(
+        <.label(`for` := "artist")("Artist"),
+        <.div(cls := "row", id := "artist")(
+          <.div(cls := "col-xs-10")(
             <.input(
               `type` := "text",
               cls := "form-control",
@@ -76,35 +76,41 @@ class TrackListingOps($: BackendScope[Unit, TrackListingState]) extends ReactEve
               onChange ==> updateArtistInput
             )
           ),
-          <.div(cls := "col-xs-2",
+          <.div(cls := "col-xs-2")(
             <.button(
               `type` := "submit",
               cls := "btn btn-primary custom-button-width",
-              disabled := s.artistInput.isEmpty,
+              disabled := s.artistInput.isEmpty)(
               "Search"
             )
           )
         )
       ),
-      <.div(cls := "form-group",
-        <.label(`for` := "album", "Album"),
-        <.select(cls := "form-control", id := "album", value := s.selectedAlbum, onChange ==> updateTracks,
+      <.div(cls := "form-group")(
+        <.label(`for` := "album")("Album"),
+        <.select(cls := "form-control", id := "album", value := s.selectedAlbum, onChange ==> updateTracks)(
           s.albums.map { album =>
-            <.option(value := album.id, album.name)
+            <.option(value := album.id)(album.name)
           }.toTagMod
         )
       ),
       <.hr,
-      <.ul(s.tracks.map { track =>
-        <.li(
-          <.div(
-            <.p(s"${track.track_number}. ${track.name} (${formatDuration(track.duration_ms)})"),
-            <.audio(controls := true, key := track.preview_url,
-              <.source(src := track.preview_url)
+      <.ul(
+        s.tracks.map { track =>
+          <.li(
+            <.div(
+              <.p(s"${track.track_number}. ${track.name} (${formatDuration(track.duration_ms)})"),
+              if (track.preview_url != null) {
+                <.audio(controls := true, key := track.preview_url)(
+                  <.source(src := track.preview_url)
+                )
+              } else {
+                TagMod()
+              }
             )
           )
-        )
-      }.toTagMod)
+        }.toTagMod
+      )
     )
   }
 }
