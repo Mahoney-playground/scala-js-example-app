@@ -8,17 +8,15 @@
 </head>
 <body>
 
-<h1>Example Scala.js application - full-optimized version</h1>
+  <div id="playground">
+  </div>
 
-<p>After having compiled and full-optimized properly the code for the application
-(using `sbt fullOptJS`), you should see "It works" herebelow.
-See README.md for detailed explanations.</p>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
-<div id="playground">
-</div>
-
-<script type="text/javascript" src="./target/scala-2.12/example-opt.js"></script>
-<script type="text/javascript" src="./target/scala-2.12/example-launcher.js"></script>
+  <script type="text/javascript" src="./target/scala-2.12/scala-js-react-guide-jsdeps.js"></script>
+  <script type="text/javascript" src="./target/scala-2.12/scala-js-react-guide-opt.js"></script>
+  <script type="text/javascript" src="./target/scala-2.12/scala-js-react-guide-launcher.js"></script>
 
 </body>
 </html>

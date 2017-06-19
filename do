@@ -30,6 +30,10 @@ case $action in
         echo '~ fastOptJS' | sbt shell
         ;;
 
+    "build")
+        doBuild sbt fullOptJS
+        ;;
+
     *)
         echo "Sorry, no idea what you mean by '$action'"
         echo "Usage:"

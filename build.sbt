@@ -2,7 +2,7 @@
 enablePlugins(ScalaJSPlugin)
 enablePlugins(WorkbenchPlugin)
 
-name := "Example"
+name := "Scala Js React Guide"
 
 version := "0.1-SNAPSHOT"
 
@@ -13,8 +13,18 @@ scalaJSUseMainModuleInitializer := true
 testFrameworks += new TestFramework("utest.runner.Framework")
 
 libraryDependencies ++= Seq(
-  "org.scala-js" %%% "scalajs-dom" % "0.9.2",
-  "com.lihaoyi" %%% "utest" % "0.4.5" % "test",
-  "com.lihaoyi" %%% "scalatags" % "0.6.5",
-  "com.lihaoyi" %%% "scalarx" % "0.3.2"
+  "com.github.japgolly.scalajs-react" %%% "core" % "1.0.1",
+  "com.github.japgolly.scalajs-react" %%% "extra" % "1.0.1"
+//  scalareact("core"),
+//  scalareact("extra")
 )
+
+jsDependencies ++= Seq(
+  jsreact("react-with-addons") commonJSName "React",
+  jsreact("react-dom") commonJSName "ReactDOM" dependsOn "react-with-addons.js",
+  jsreact("react-dom-server") commonJSName "ReactDOMServer" dependsOn "react-dom.js"
+)
+
+//def scalareact(artifact: String) = "com.github.japgolly.scalajs-react".%%%(artifact).%("1.0.1")
+
+def jsreact(file: String) = ("org.webjars.bower" % "react" % "15.5.4")./(file+".js").minified(file+".min.js")
