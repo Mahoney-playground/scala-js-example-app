@@ -70,6 +70,7 @@ class TrackListingOps($: BackendScope[Unit, TrackListingState]) extends ReactEve
         <.div(cls := "row", id := "artist")(
           <.div(cls := "col-xs-10")(
             <.input(
+              id := "artist",
               `type` := "text",
               cls := "form-control",
               value := s.artistInput,
@@ -88,7 +89,12 @@ class TrackListingOps($: BackendScope[Unit, TrackListingState]) extends ReactEve
       ),
       <.div(cls := "form-group")(
         <.label(`for` := "album")("Album"),
-        <.select(cls := "form-control", id := "album", value := s.selectedAlbum, onChange ==> updateTracks)(
+        <.select(
+          cls := "form-control",
+          id := "album",
+          value := s.selectedAlbum,
+          onChange ==> updateTracks
+        )(
           s.albums.map { album =>
             <.option(value := album.id)(album.name)
           }.toTagMod
