@@ -27,7 +27,7 @@ function doBuild {
 
 case $action in
      "develop")
-        echo '~ fastOptJS' | sbt shell
+        sbt '~ ;appJVM/reStart;fastOptJS' shell
         ;;
 
     "build")

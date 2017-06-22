@@ -22,14 +22,15 @@ object App extends js.JSApp {
 
 object TrackListingApp {
 
-  val component: Component[Unit, TrackListingState, TrackListingOps, Nullary] = ScalaComponent.builder[Unit]("Spotify Track Listing 1")
+  val component: Component[Unit, TrackListingState, TrackListingOps, Nullary] = ScalaComponent.builder[Unit]("Spotify Track Listing")
     .initialState(TrackListingState.empty)
-    .renderBackend[TrackListingOps]
+    .backend[TrackListingOps](new TrackListingOps(_, AjaxSpotifyApi()))
+    .renderBackend
     .build
 
 }
 
-class TrackListingOps($: BackendScope[Unit, TrackListingState]) extends ReactEventTypes {
+class TrackListingOps($: BackendScope[Unit, TrackListingState], spotifyApi: SpotifyApi) extends ReactEventTypes {
 
   private val artistInputState = $.zoomState(_.artistInput)(newArtistInput => _.copy(artistInput = newArtistInput))
 
@@ -41,15 +42,15 @@ class TrackListingOps($: BackendScope[Unit, TrackListingState]) extends ReactEve
   private def updateTracks(event: ReactEventFromInput) = Callback.future {
     val albumId = event.target.value
 
-    SpotifyApi.fetchTracks(albumId).map { tracks => selectedAlbumState.setState(albumId) >> tracksState.setState(tracks) }
+    spotifyApi.fetchTracks(albumId).map { tracks => selectedAlbumState.setState(albumId) >> tracksState.setState(tracks) }
   }
 
   private def searchForArtist(name: String, selectedAlbum: String)(event: ReactEvent) = Callback.future {
     event.preventDefault()
     for {
-      artistOpt <- SpotifyApi.fetchArtist(name)
-      albums <- artistOpt.map (artist => SpotifyApi.fetchAlbums(artist.id)) getOrElse Future.successful(Nil)
-      tracks <- albums.find { _.id == selectedAlbum }.orElse(albums.headOption).map (album => SpotifyApi.fetchTracks(album.id)) getOrElse Future.successful(Nil)
+      artistOpt <- spotifyApi.fetchArtist(name)
+      albums <- artistOpt.map (artist => spotifyApi.fetchAlbums(artist.id)) getOrElse Future.successful(Nil)
+      tracks <- albums.find { _.id == selectedAlbum }.orElse(albums.headOption).map (album => spotifyApi.fetchTracks(album.id)) getOrElse Future.successful(Nil)
     } yield {
       artistOpt match {
         case None => Callback.alert("No artist found")
